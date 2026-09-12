@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="AutoAI — יועץ רכב חכם בישראל. התאמת רכב, עלות אמיתית, בדיקת הונאות, משא ומתן והשוואת רכבים.">
+<meta name="theme-color" content="#0F172A">
+<meta property="og:title" content="AutoAI — היועץ החכם לרכב">
+<meta property="og:description" content="מצא את הרכב שמתאים לך וקבל החלטת קנייה חכמה יותר.">
+<title>AutoAI — היועץ החכם לרכב 🚗</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b:#2563EB;--bd:#1E40AF;--bl:#EFF6FF;--bm:#DBEAFE;
+  --g:#16A34A;--gl:#F0FDF4;--gm:#BBF7D0;
+  --o:#F59E0B;--ol:#FFFBEB;
+  --r:#DC2626;--rl:#FEF2F2;
+  --dark:#0F172A;--mid:#1E293B;--muted:#64748B;--light:#94A3B8;
+  --bg:#F1F5F9;--white:#fff;--border:#E2E8F0;
+  --sh:0 2px 12px rgba(15,23,42,.08);
+  --sh2:0 8px 40px rgba(15,23,42,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Heebo',sans-serif;background:var(--bg);color:var(--dark);overflow:hidden}
+
+/* ─── LAYOUT ─── */
+.app{display:flex;flex-direction:column;height:100vh;max-width:1180px;margin:0 auto;background:var(--white);position:relative;overflow:hidden;box-shadow:0 0 40px rgba(15,23,42,.08)}
+
+/* ─── HEADER ─── */
+.hdr{background:var(--dark);padding:12px 16px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative;z-index:20}
+.hdr-logo{display:flex;align-items:center;gap:10px;flex:1}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--b),#7C3AED);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.4)}
+.logo-name{font-size:19px;font-weight:900;color:white;letter-spacing:-0.5px}
+.logo-tag{font-size:10px;color:#64748B;font-weight:500;margin-top:1px}
+.hdr-tools{display:flex;gap:6px}
+.htool{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:white;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap;transition:all .2s}
+.htool:hover{background:rgba(255,255,255,.15)}
+.htool.active{background:var(--b);border-color:var(--b)}
+
+/* ─── TABS ─── */
+.tabs{background:var(--dark);border-top:1px solid rgba(255,255,255,.07);display:flex;flex-shrink:0;padding:0 8px 8px}
+.tab{flex:1;padding:7px 4px;background:transparent;border:none;color:#64748B;font-size:11px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .2s}
+.tab.on{background:rgba(255,255,255,.1);color:white}
+.tab svg{width:18px;height:18px;stroke-width:2}
+
+/* ─── VIEWS ─── */
+.view{display:none;flex:1;flex-direction:column;overflow:hidden}
+.view.on{display:flex}
+
+/* ─── CHAT ─── */
+.chat-scroll{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px}
+.chat-scroll::-webkit-scrollbar{width:3px}
+.chat-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.bubble-row{display:flex;gap:8px;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.bubble-row.me{flex-direction:row-reverse}
+.bav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.bav.ai{background:linear-gradient(135deg,var(--b),#7C3AED);color:white;font-size:12px;font-weight:800}
+.bav.me{background:var(--dark);color:white;font-size:11px;font-weight:700}
+.bubble{max-width:84%;padding:11px 13px;border-radius:15px;font-size:13.5px;line-height:1.65}
+.bubble.ai{background:var(--white);border:1.5px solid var(--border);border-top-right-radius:3px;box-shadow:var(--sh)}
+.bubble.me{background:var(--b);color:white;border-top-left-radius:3px}
+.btime{font-size:10px;color:var(--light);margin-top:3px}
+.bubble-row.me .btime{text-align:right}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.chip{padding:7px 13px;background:var(--bl);border:1.5px solid var(--bm);border-radius:50px;font-size:12px;font-weight:700;color:var(--bd);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .2s}
+.chip:hover,.chip:active{background:var(--b);color:white;border-color:var(--b)}
+
+/* typing */
+.typing-row{display:flex;gap:8px}
+.typing-dots{display:flex;align-items:center;gap:4px;background:var(--white);border:1.5px solid var(--border);border-radius:15px;border-top-right-radius:3px;padding:13px 15px;box-shadow:var(--sh)}
+.typing-dots span{width:6px;height:6px;background:var(--light);border-radius:50%;animation:td 1.1s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0);background:var(--light)}30%{transform:translateY(-5px);background:var(--b)}}
+
+/* ─── CARDS ─── */
+.rec-card{background:linear-gradient(145deg,#0F172A 0%,#1E293B 100%);color:white;border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.06)}
+.rc-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.4);color:#93C5FD;padding:4px 10px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:.4px;margin-bottom:12px}
+.rc-name{font-size:22px;font-weight:900;margin-bottom:2px;letter-spacing:-.5px}
+.rc-sub{font-size:12px;color:#94A3B8;margin-bottom:14px}
+.rc-score{display:inline-flex;align-items:center;gap:8px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);border-radius:50px;padding:5px 12px;margin-bottom:14px}
+.rc-score-num{font-size:18px;font-weight:900;color:#4ADE80}
+.rc-score-lbl{font-size:11px;color:#86EFAC;font-weight:600}
+.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.rc-stat{background:rgba(255,255,255,.05);border-radius:10px;padding:10px 11px;border:1px solid rgba(255,255,255,.04)}
+.rc-sval{font-size:14px;font-weight:800;margin-bottom:1px}
+.rc-slbl{font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.rc-why{background:rgba(255,255,255,.04);border-radius:10px;padding:12px;margin-bottom:12px;border-right:3px solid var(--b)}
+.rc-why-h{font-size:10px;font-weight:800;color:#60A5FA;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.rc-why-t{font-size:12.5px;color:#CBD5E1;line-height:1.6}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.pc-col h4{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.pro-h{color:#4ADE80}.con-h{color:#FCA5A5}
+.pc-item{font-size:11.5px;line-height:1.5;color:#CBD5E1;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.rc-cta-row{display:flex;gap:8px}
+.rc-cta{flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+.rc-cta.primary{background:var(--b);color:white}
+.rc-cta.secondary{background:rgba(255,255,255,.08);color:white;border:1px solid rgba(255,255,255,.12)}
+.rc-cta:active{transform:scale(.97)}
+
+/* cost card */
+.cost-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.cost-header{background:var(--dark);color:white;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.cost-title{font-size:14px;font-weight:800}
+.cost-body{padding:14px}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cost-row:last-child{border:none}
+.cost-lbl{color:var(--muted)}
+.cost-val{font-weight:700}
+.cost-total{background:var(--bl);border-radius:10px;padding:12px 14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+.cost-total-lbl{font-size:13px;color:var(--b);font-weight:700}
+.cost-total-val{font-size:20px;font-weight:900;color:var(--b);font-family:'Heebo',sans-serif}
+
+/* scam card */
+.scam-card{border-radius:14px;overflow:hidden;border:1.5px solid;box-shadow:var(--sh)}
+.scam-card.safe{border-color:var(--gm);background:var(--gl)}
+.scam-card.warn{border-color:#FED7AA;background:var(--ol)}
+.scam-card.danger{border-color:#FECACA;background:var(--rl)}
+.scam-header{padding:12px 14px;display:flex;align-items:center;gap:10px}
+.scam-icon{font-size:24px}
+.scam-title{font-size:15px;font-weight:800}
+.scam-sub{font-size:11px;font-weight:600;opacity:.7}
+.scam-items{padding:0 14px 14px;display:flex;flex-direction:column;gap:6px}
+.scam-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.6);line-height:1.5}
+.scam-item.red{background:rgba(220,38,38,.08);color:var(--r)}
+.scam-item.green{background:rgba(22,163,74,.08);color:var(--g)}
+.scam-item.orange{background:rgba(245,158,11,.08);color:var(--o)}
+
+/* negotiation card */
+.neg-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.neg-header{background:linear-gradient(135deg,#7C3AED,var(--b));color:white;padding:14px}
+.neg-title{font-size:15px;font-weight:800;margin-bottom:2px}
+.neg-sub{font-size:11px;opacity:.7}
+.neg-body{padding:14px}
+.neg-price-row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.neg-price{flex:1;text-align:center;padding:12px;border-radius:10px}
+.neg-price.ask{background:var(--rl);color:var(--r)}
+.neg-price.offer{background:var(--gl);color:var(--g)}
+.neg-price-val{font-size:18px;font-weight:900;display:block}
+.neg-price-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;opacity:.7}
+.neg-arrow{font-size:20px;color:var(--muted)}
+.neg-tips{display:flex;flex-direction:column;gap:6px}
+.neg-tip{padding:10px 12px;background:var(--bl);border-radius:9px;font-size:12.5px;color:var(--bd);line-height:1.5;display:flex;align-items:flex-start;gap:8px}
+.neg-tip-num{width:20px;height:20px;background:var(--b);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+
+/* checklist card */
+.check-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);overflow:hidden;box-shadow:var(--sh)}
+.check-header{background:var(--dark);color:white;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.check-section{padding:12px 14px 4px;border-bottom:1px solid var(--border)}
+.check-section:last-child{border-bottom:none}
+.check-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:8px}
+.check-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check-box.done{background:var(--g);border-color:var(--g);color:white;font-size:12px}
+.check-txt{font-size:13px;flex:1}
+.check-txt.done{text-decoration:line-through;color:var(--light)}
+.check-progress{height:4px;background:var(--border);border-radius:50px;margin:10px 14px;overflow:hidden}
+.check-progress-bar{height:100%;background:var(--g);border-radius:50px;transition:width .3s}
+
+/* ─── TOOLS VIEW ─── */
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;overflow-y:auto;flex:1}
+.tool-btn{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .2s;box-shadow:var(--sh)}
+.tool-btn:hover{border-color:var(--b);background:var(--bl)}
+.tool-btn:active{transform:scale(.97)}
+.tool-icon{font-size:28px;margin-bottom:8px;display:block}
+.tool-name{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:3px}
+.tool-desc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* ─── STATS VIEW ─── */
+.stats-wrap{flex:1;overflow-y:auto;padding:14px}
+.stat-card{background:var(--white);border-radius:14px;padding:16px;margin-bottom:12px;border:1.5px solid var(--border);box-shadow:var(--sh)}
+.stat-card-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.stat-big{font-size:36px;font-weight:900;color:var(--b);font-family:'Heebo',sans-serif;line-height:1}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.stat-row:last-child{border:none}
+.market-bar{height:8px;background:var(--border);border-radius:50px;overflow:hidden;margin-top:6px;margin-bottom:10px}
+.market-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--g),var(--b))}
+
+/* ─── INPUT ─── */
+.input-wrap{border-top:1px solid var(--border);padding:10px 12px;background:var(--white);flex-shrink:0}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.inp-box{flex:1}
+.inp-box textarea{width:100%;border:1.5px solid var(--border);border-radius:11px;padding:10px 13px;font-size:13.5px;font-family:'Heebo',sans-serif;resize:none;outline:none;max-height:90px;min-height:42px;transition:border-color .2s;color:var(--dark);background:var(--bg);line-height:1.5}
+.inp-box textarea:focus{border-color:var(--b);background:white}
+.inp-box textarea::placeholder{color:var(--light)}
+.send{width:42px;height:42px;background:var(--b);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.send:hover{background:var(--bd)}
+.send:active{transform:scale(.95)}
+.send:disabled{background:var(--border);cursor:not-allowed}
+.send svg{width:17px;height:17px;fill:white}
+.input-hint-bar{display:flex;gap:8px;overflow-x:auto;padding:6px 0 0;scrollbar-width:none}
+.input-hint-bar::-webkit-scrollbar{display:none}
+.hint-chip{padding:5px 11px;background:var(--bg);border:1px solid var(--border);border-radius:50px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Heebo',sans-serif}
+.hint-chip:hover{border-color:var(--b);color:var(--b)}
+
+/* ─── MODALS ─── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-end;justify-content:center;max-width:500px;left:50%;transform:translateX(-50%)}
+.modal-bg.on{display:flex}
+.modal{background:white;border-radius:20px 20px 0 0;padding:20px 18px 30px;width:100%;max-height:80vh;overflow-y:auto}
+.mhandle{width:34px;height:4px;background:var(--border);border-radius:50px;margin:0 auto 16px}
+.mtitle{font-size:18px;font-weight:900;margin-bottom:4px}
+.msub{font-size:12.5px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.mopt{display:flex;align-items:center;gap:12px;padding:12px;border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.mopt:hover,.mopt.sel{border-color:var(--b);background:var(--bl)}
+.mopt-ico{font-size:22px;width:42px;height:42px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mopt.sel .mopt-ico{background:var(--b)}
+.mopt-txt .mt{font-size:14px;font-weight:700;margin-bottom:2px}
+.mopt-txt .ms{font-size:11.5px;color:var(--muted)}
+.mopt-chk{margin-right:auto;color:var(--b);font-size:17px;opacity:0}
+.mopt.sel .mopt-chk{opacity:1}
+.mbtn{width:100%;padding:14px;background:var(--b);color:white;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;margin-top:12px}
+.slider-val{font-size:42px;font-weight:900;color:var(--b);text-align:center;margin:10px 0;letter-spacing:-1px;font-family:'Heebo',sans-serif}
+input[type=range]{width:100%;height:6px;-webkit-appearance:none;background:var(--border);border-radius:50px;outline:none;margin-bottom:8px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:var(--b);border-radius:50%;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,.35)}
+.rlabels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:600}
+.multi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.mg{padding:11px 8px;background:white;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Heebo',sans-serif}
+.mg.sel{border-color:var(--b);background:var(--bl);color:var(--b)}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);background:var(--dark);color:white;padding:10px 18px;border-radius:50px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;font-family:'Heebo',sans-serif;box-shadow:var(--sh2)}
+.toast.on{opacity:1}
+
+/* ─── PROGRESS ─── */
+.prog-wrap{background:var(--dark);padding:0 14px 10px;flex-shrink:0}
+.prog-steps{display:flex;gap:4px;margin-bottom:7px}
+.ps{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:50px;transition:all .3s}
+.ps.done{background:var(--b)}
+.ps.act{background:rgba(37,99,235,.5)}
+.prog-lbl{font-size:10px;color:#64748B;font-weight:600}
+
+/* ─── LEAD SECTION ─── */
+.lead-section{background:linear-gradient(135deg,var(--b),#7C3AED);border-radius:14px;padding:16px;color:white;margin-top:4px}
+.lead-title{font-size:15px;font-weight:800;margin-bottom:6px}
+.lead-sub{font-size:12px;opacity:.8;margin-bottom:14px;line-height:1.5}
+.lead-listings{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.lead-listing{background:rgba(255,255,255,.12);border-radius:10px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid rgba(255,255,255,.1);transition:all .2s}
+.lead-listing:hover{background:rgba(255,255,255,.2)}
+.lead-listing-left .ll-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.lead-listing-left .ll-meta{font-size:11px;opacity:.7}
+.lead-listing-price{text-align:left}
+.ll-price{font-size:16px;font-weight:900;display:block}
+.ll-city{font-size:10px;opacity:.7}
+.ll-arrow{font-size:18px;opacity:.6}
+.lead-source{font-size:11px;opacity:.5;text-align:center;margin-top:8px}
+.lead-cta-row{display:flex;gap:8px}
+.lead-cta{flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;transition:all .2s}
+.lead-cta.primary{background:white;color:var(--b)}
+.lead-cta.secondary{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.2)}
+
+@media(min-width:760px){body{overflow:auto}.app{height:100vh}.modal-bg{max-width:620px}.tools-grid{grid-template-columns:repeat(3,1fr)}.chat-scroll{padding-left:clamp(20px,5vw,70px);padding-right:clamp(20px,5vw,70px)}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="logo-mark">🚗</div>
+      <div>
+        <div class="logo-name">AutoAI</div>
+        <div class="logo-tag">היועץ החכם לרכב שלך</div>
+      </div>
+    </div>
+    <div class="hdr-tools">
+      <button class="htool" onclick="toggleLang()" id="lang-btn">EN</button>
+      <button class="htool" onclick="shareApp()">📤</button>
+      <button class="htool" onclick="resetAll()">↺</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" id="tab-chat" onclick="switchTab('chat')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      יועץ
+    </button>
+    <button class="tab" id="tab-tools" onclick="switchTab('tools')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      כלים
+    </button>
+    <button class="tab" id="tab-market" onclick="switchTab('market')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      שוק
+    </button>
+  </div>
+
+  <!-- ══ VIEW: CHAT ══ -->
+  <div class="view on" id="view-chat">
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-steps">
+        <div class="ps act" id="ps1"></div>
+        <div class="ps" id="ps2"></div>
+        <div class="ps" id="ps3"></div>
+        <div class="ps" id="ps4"></div>
+      </div>
+      <div class="prog-lbl" id="prog-lbl">שלב 1 מתוך 4 — תקציב</div>
+    </div>
+    <div class="chat-scroll" id="chat"></div>
+    <div class="input-wrap">
+      <div class="input-row">
+        <div class="inp-box">
+          <textarea id="inp" placeholder="שאל כל שאלה על רכבים..." rows="1" onkeydown="onKey(event)" oninput="autoH(this)"></textarea>
+        </div>
+        <button class="send" id="send-btn" onclick="sendMsg()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint-bar" id="hint-bar">
+        <span class="hint-chip" onclick="qr('כמה ביטוח עולה?')">💰 ביטוח</span>
+        <span class="hint-chip" onclick="qr('מה לבדוק לפני קנייה?')">🔍 בדיקה</span>
+        <span class="hint-chip" onclick="qr('איך לנהל משא ומתן?')">🤝 מו״מ</span>
+        <span class="hint-chip" onclick="qr('השוו בין הרכבים שהמלצת')">⚖️ השווה</span>
+        <span class="hint-chip" onclick="qr('כמה שווה הרכב שלי?')">📊 שווי רכב</span>
+        <span class="hint-chip" onclick="openTool('checklist')">✅ צ׳קליסט</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: TOOLS ══ -->
+  <div class="view" id="view-tools">
+    <div class="tools-grid">
+      <div class="tool-btn" onclick="openTool('cost')">
+        <span class="tool-icon">💰</span>
+        <div class="tool-name">עלות אמיתית</div>
+        <div class="tool-desc">כמה יעלה לך הרכב ב-3 שנים, לא רק מחיר הקנייה</div>
+      </div>
+      <div class="tool-btn" onclick="openTool('scam')">
+        <span class="tool-icon">🛡️</span>
+        <div class="tool-name">גלאי הונאות</div>
+        <div class="tool-desc">הכנס פרטי רכב — נגלה דגלים אדומים</div>
+      </div>
+      <div class="tool-btn" onclick="openTool('nego')">
+        <span class="tool-icon">🤝</span>
+        <div class="tool-name">מאמן מו״מ</div>
+        <div class="tool-desc">כמה להציע? מה להגיד? מה לא להגיד?</div>
+      </div>
+      <div class="tool-btn" onclick="openTool('checklist')">
+        <span class="tool-icon">✅</span>
+        <div class="tool-name">צ׳קליסט בדיקה</div>
+        <div class="tool-desc">רשימת 25 נקודות לבדיקת רכב לפני קנייה</div>
+      </div>
+      <div class="tool-btn" onclick="openTool('loan')">
+        <span class="tool-icon">🏦</span>
+        <div class="tool-name">מחשבון הלוואה</div>
+        <div class="tool-desc">כמה תשלם בחודש? כמה ריבית תשלם?</div>
+      </div>
+      <div class="tool-btn" onclick="openTool('compare')">
+        <span class="tool-icon">⚖️</span>
+        <div class="tool-name">השוואת רכבים</div>
+        <div class="tool-desc">השווה 2-3 רכבים ב-10 פרמטרים</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: MARKET ══ -->
+  <div class="view" id="view-market">
+    <div class="stats-wrap">
+      <div class="stat-card">
+        <div class="stat-card-title">📊 נתוני שוק — ישראל 2026</div><div style="font-size:10px;color:var(--muted);margin:-6px 0 10px">נתוני הדגמה — לפני פרסום יש לחבר מקור נתונים חי.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div><div class="stat-big">₪74k</div><div class="stat-lbl">ממוצע רכב יד שנייה</div></div>
+          <div><div class="stat-big" style="color:var(--g)">+8%</div><div class="stat-lbl">עלייה ב-12 חודש אחרון</div></div>
+        </div>
+        <div class="stat-row"><span>קורולה 2020</span><span class="cost-val">₪70,000-₪85,000</span></div>
+        <div class="stat-row"><span>RAV4 Hybrid 2021</span><span class="cost-val">₪118,000-₪140,000</span></div>
+        <div class="stat-row"><span>מאזדה CX-5 2021</span><span class="cost-val">₪105,000-₪130,000</span></div>
+        <div class="stat-row"><span>יונדאי טוסון 2020</span><span class="cost-val">₪75,000-₪95,000</span></div>
+        <div class="stat-row"><span>BMW 320i 2020</span><span class="cost-val">₪130,000-₪155,000</span></div>
+        <div class="stat-row"><span>טסלה מודל 3 2022</span><span class="cost-val">₪155,000-₪185,000</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">🔥 הנמכרים ביותר 2026</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:700">1. Toyota Corolla</span><span style="color:var(--muted)">32%</span></div><div class="market-bar"><div class="market-fill" style="width:100%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:700">2. Hyundai Tucson</span><span style="color:var(--muted)">28%</span></div><div class="market-bar"><div class="market-fill" style="width:87%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:700">3. Kia Sportage</span><span style="color:var(--muted)">24%</span></div><div class="market-bar"><div class="market-fill" style="width:75%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:700">4. Mazda CX-5</span><span style="color:var(--muted)">19%</span></div><div class="market-bar"><div class="market-fill" style="width:60%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:700">5. Toyota RAV4</span><span style="color:var(--muted)">17%</span></div><div class="market-bar"><div class="market-fill" style="width:53%"></div></div></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">💡 טיפ שוק החודש</div>
+        <p style="font-size:13px;color:var(--mid);line-height:1.65">
+          <strong>עכשיו זמן טוב לקנות.</strong> מחירי יד שנייה ירדו ב-3-5% מהשיא של 2025. 
+          מוכרים פרטיים יותר גמישים בחודשי הקיץ — השתמשו בזה.
+          <br><br>
+          <strong>להימנע מ:</strong> דגמי BMW/מרצדס ישנים (2015-2018) — עלויות תחזוקה גבוהות מאוד. 
+          <strong>מומלץ עכשיו:</strong> יונדאי/קיה 2019-2021 — מחיר/ערך הכי טוב בשוק.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let step=0, lang='he', userData={}, sels={}, chatH=[], isLoading=false;
+let budgetV=80000;
+const STEPS=4;
+
+// ══════════════════════════════════════════════════
+// CAR DATABASE
+// ══════════════════════════════════════════════════
+const CARS={
+  city:{
+    low:[{n:'Suzuki Swift',y:'2018-2022',p:'₪38k-₪55k',score:8.8,why:'קבוצת ביטוח 1, קל לנהיגה, תחזוקה זולה',pros:['ביטוח מהזול בארץ','קל לחנייה בעיר','תחזוקה זולה מאוד'],cons:['קטן לנסיעות ארוכות'],maint:2200,fuel:3200,ins:3500,price:48000},
+          {n:'Hyundai i20',y:'2019-2022',p:'₪45k-₪62k',score:8.5,why:'קצת יותר גדול מ-Swift עם אמינות יפנית',pros:['מרחב סביר','אמינות טובה','ביטוח נמוך'],cons:['מנוע לא חזק'],maint:2500,fuel:3400,ins:3800,price:53000}],
+    mid:[{n:'Toyota Corolla',y:'2018-2022',p:'₪65k-₪85k',score:9.3,why:'אמינות ללא תחרות. ערך יד שנייה גבוה. עלויות תחזוקה נמוכות מאוד',pros:['אמינות מיתולוגית','ערך יד שנייה גבוה','תחזוקה זולה'],cons:['עיצוב שמרני'],maint:2800,fuel:3600,ins:4200,price:75000},
+          {n:'Mazda 3',y:'2019-2022',p:'₪72k-₪90k',score:8.9,why:'עיצוב מרהיב + נהיגה מהנה + אמינות = שילוב מנצח',pros:['עיצוב מדהים','נהיגה מהנה','פנים פרימיום'],cons:['תא מטען קטן'],maint:3000,fuel:3800,ins:4500,price:82000}],
+    high:[{n:'Toyota Corolla Hybrid',y:'2020-2024',p:'₪92k-₪115k',score:9.5,why:'בעיר, היברידי חוסך ₪5,000+ בשנה. מחזיר את עצמו ב-3 שנים',pros:['חיסכון עצום בדלק','ביטוח נמוך','אמינות מושלמת'],cons:['מחיר גבוה יותר'],maint:2600,fuel:2000,ins:4000,price:103000},
+          {n:'Honda Civic',y:'2020-2023',p:'₪95k-₪118k',score:8.8,why:'טכנולוגיה מתקדמת ונוחות גבוהה יותר מהקורולה',pros:['Honda Sensing','שקט בנסיעה','טכנולוגיה מתקדמת'],cons:['יקר מהקורולה'],maint:3200,fuel:3800,ins:4800,price:106000}]
+  },
+  family:{
+    low:[{n:'Kia Sportage (2015-2018)',y:'2015-2018',p:'₪45k-₪65k',score:8.1,why:'SUV משפחתי בתקציב מצומצם — הכי שפוי',pros:['מרחב משפחתי','SUV לילדים','גרסאות יד שנייה זולות'],cons:['גיל הרכב','ישן יחסית'],maint:4000,fuel:5200,ins:4500,price:55000}],
+    mid:[{n:'Hyundai Tucson',y:'2019-2022',p:'₪72k-₪95k',score:9.0,why:'5 שנות אחריות, שירות נפוץ, מרחב מצוין',pros:['מרחב מצוין','5 שנות אחריות','שירות נפוץ'],cons:['בלימה רכה'],maint:3800,fuel:5500,ins:5000,price:83000},
+          {n:'Kia Sportage',y:'2019-2023',p:'₪75k-₪98k',score:9.1,why:'7 שנות אחריות קיה — שקט נפשי מושלם לפמיליה',pros:['7 שנות אחריות','עיצוב מודרני','מרחב גדול'],cons:['צריכת דלק ממוצעת'],maint:3500,fuel:5400,ins:4800,price:86000}],
+    high:[{n:'Toyota RAV4 Hybrid',y:'2020-2024',p:'₪115k-₪145k',score:9.6,why:'5 כוכבי Euro NCAP + היברידי + אמינות יפנית. לא צריך לחפש יותר.',pros:['5 כוכבי בטיחות','היברידי AWD','אמינות מושלמת'],cons:['מחיר גבוה'],maint:2800,fuel:3000,ins:5500,price:128000},
+          {n:'Mazda CX-5',y:'2020-2024',p:'₪108k-₪138k',score:9.4,why:'פרימיום בלי לשלם יוקרה. הפנים הכי יפים בקטגוריה.',pros:['עיצוב מרהיב','פנים פרימיום','אמינות מצוינת'],cons:['אין היברידי'],maint:3000,fuel:5000,ins:5200,price:120000}]
+  },
+  first:[{n:'Suzuki Swift',y:'2018-2022',p:'₪38k-₪55k',score:8.8,why:'קבוצת ביטוח 1 — ביטוח הכי זול בארץ. קל לנהיגה.',pros:['ביטוח הכי נמוך','קל לנהיגה','תחזוקה זולה'],cons:['קטן'],maint:2200,fuel:3000,ins:3200,price:46000},
+           {n:'Toyota Corolla (2017-2019)',y:'2017-2019',p:'₪58k-₪78k',score:9.3,why:'לנהג חדש — אמינות הקורולה היא מתנה. לא תצטרך מכונאי.',pros:['אמינות ללא תחרות','קל לנהיגה','ערך שמירה'],cons:['ישן יחסית'],maint:2800,fuel:3600,ins:4200,price:68000}],
+  highway:[{n:'Skoda Octavia Diesel',y:'2018-2022',p:'₪65k-₪88k',score:8.9,why:'4.5 ליטר/100 בכביש. תא מטען 600 ליטר. מחזיר את עצמו מהר.',pros:['חיסכון דלק בכביש','תא מטען ענק','יציבות גבוהה'],cons:['תחזוקה יקרה יותר'],maint:4200,fuel:4000,ins:4800,price:76000},
+             {n:'Toyota Camry Hybrid',y:'2020-2024',p:'₪112k-₪140k',score:9.3,why:'נוחות פרימיום + היברידי = חיסכון + נסיעה שקטה',pros:['נוחות פרימיום','היברידי לכביש','שקט מנוע'],cons:['גדול לעיר'],maint:3000,fuel:3200,ins:5500,price:125000}],
+  performance:[{n:'Mazda MX-5',y:'2016-2021',p:'₪62k-₪88k',score:8.9,why:'חוויית נהיגה יוצאת דופן בתקציב. אין תחרות.',pros:['חוויית נהיגה מדהימה','אמינות מצוינת','כיף אמיתי'],cons:['שני מקומות בלבד'],maint:3200,fuel:5000,ins:5500,price:75000},
+                {n:'BMW 118i / 120i',y:'2019-2022',p:'₪90k-₪130k',score:8.7,why:'נהיגה ספורטיבית גרמנית אמיתית. תשלם על התחזוקה.',pros:['נהיגה ספורטיבית','יוקרה גרמנית','מנוע קולי'],cons:['תחזוקה יקרה מאוד'],maint:6500,fuel:6000,ins:7000,price:110000}]
+};
+
+const CHECKLIST=[
+  {sec:'🔍 חוץ הרכב',items:['בדוק שוויון פגוש ומכסה מנוע','חפש סדקים/גומות בפח','בדוק טיב הצבע (אחידות)','בדוק שמשות לסדקים','בדוק גומי אטימה בדלתות']},
+  {sec:'⚙️ מנוע',items:['בדוק שמן — צבע ורמה','בדוק נוזל קירור — אל תפתח חם','חפש דליפות מתחת לרכב','האזן לרעשים חריגים','בדוק גיר הילוכים — חלקות מעבר']},
+  {sec:'🚗 נסיעת מבחן',items:['נסיעה של לפחות 20 דקות','בדוק בלמים — עצירה ישרה','בדוק הגה — משוב תקין','בדוק מיזוג אוויר','בדוק נסיעה בכביש מהיר']},
+  {sec:'📋 מסמכים',items:['רישיון רכב תקין','בעלות = מוכר','אישור עמידה בבדיקה','בדיקת משטרה (ברשות הרישוי)','אין חובות מס']},
+  {sec:'💰 מחיר',items:['השווה ל-3 מודעות דומות','בקש הנחה לפחות 5%','הבא מכונאי עצמאי (₪300)','בדוק ביטוח לפני חתימה']}
+];
+
+let checkState={};
+CHECKLIST.forEach((s,si)=>s.items.forEach((_,ii)=>checkState[`${si}-${ii}`]=false));
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.onload=()=>{restoreState();startChat()};
+
+function saveState(){try{localStorage.setItem('autoai_state',JSON.stringify({userData,chatH,step,lang}));}catch(e){}}
+function restoreState(){try{const raw=localStorage.getItem('autoai_state');if(!raw)return;const s=JSON.parse(raw);if(s.userData)userData=s.userData;if(Array.isArray(s.chatH))chatH=s.chatH;if(s.lang){lang=s.lang;document.documentElement.lang=lang;document.documentElement.dir=lang==='he'?'rtl':'ltr';document.getElementById('lang-btn').textContent=lang==='he'?'EN':'עב';}}catch(e){}}
+function persist(){saveState();}
+
+function startChat(){
+  setTimeout(()=>addAI('שלום! 👋 אני <strong>AutoAI</strong> — היועץ החכם לרכב שלך.<br><br>אני הולך לשאול אותך <strong>4 שאלות קצרות</strong> ולחזור עם המלצה מדויקת, השוואת עלויות אמיתיות, ואפשרות לחפש את הרכב בפועל.<br><br>לאחר מכן — <strong>שאל אותי כל שאלה חופשית</strong> 🚗'),400);
+  setTimeout(()=>addAI('נתחיל? כמה דקות מהיום יחסכו לך <strong>הרבה כסף ועצבים</strong> 💪',1200,[{t:'בוא נתחיל!',a:()=>nextStep()}]));
+}
+
+// ══════════════════════════════════════════════════
+// FLOW
+// ══════════════════════════════════════════════════
+function nextStep(){
+  step++;
+  updateProg();
+  if(step===1) openModal(buildBudgetModal());
+  else if(step===2) openModal(buildUsecaseModal());
+  else if(step===3) openModal(buildPriorityModal());
+  else if(step===4) openModal(buildFuelModal());
+  else generateRec();
+}
+
+function updateProg(){
+  for(let i=1;i<=STEPS;i++){
+    const el=document.getElementById('ps'+i);
+    if(!el)return;
+    el.className='ps'+(i<step?' done':i===step?' act':'');
+  }
+  const lbls=['','תקציב','שימוש','עדיפויות','סוג רכב'];
+  document.getElementById('prog-lbl').textContent=`שלב ${Math.min(step,4)} מתוך 4 — ${lbls[Math.min(step,4)]||''}`;
+}
+
+// ══════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════
+function openModal(html){
+  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal-bg').classList.add('on');
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('on')}
+document.addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal()});
+
+function buildBudgetModal(){
+  return`<div class="mhandle"></div>
+  <div class="mtitle">מה התקציב שלך? 💰</div>
+  <div class="msub">הסכום הכולל לרכישה — כולל מסים, רישוי וביטוח ראשון</div>
+  <div class="slider-val" id="bdisp">₪80,000</div>
+  <input type="range" min="30000" max="300000" step="5000" value="80000" oninput="budgetV=+this.value;document.getElementById('bdisp').textContent='₪'+fmt(budgetV)">
+  <div class="rlabels"><span>₪30k</span><span>₪300k+</span></div>
+  <button class="mbtn" onclick="confirmBudget()">המשך →</button>`;
+}
+
+function confirmBudget(){
+  userData.budget=budgetV; persist();
+  closeModal();
+  addUser(`תקציב: ₪${fmt(budgetV)}`);
+  const cat=budgetV<60000?'מצומצם, אבל יש אפשרויות מצוינות':budgetV<100000?'בינוני — הרבה אפשרויות איכותיות':'גבוה — הטובים ביותר בשוק';
+  setTimeout(()=>addAI(`תקציב ${cat}.<br>עכשיו — <strong>לאיזה שימוש הרכב?</strong>`,0,[{t:'בחר שימוש 🛣️',a:()=>nextStep()}]),600);
+}
+
+function buildUsecaseModal(){
+  const opts=[
+    {v:'city',i:'🏙️',t:'נסיעות עיר',s:'פקקים, חניה, חיסכון בדלק'},
+    {v:'family',i:'👨‍👩‍👧',t:'משפחה וטיולים',s:'מרחב, בטיחות, נסיעות ארוכות'},
+    {v:'highway',i:'🛣️',t:'בין-עירוני',s:'כביש מהיר, נוחות, יציבות'},
+    {v:'performance',i:'⚡',t:'ביצועים',s:'עוצמה, חוויית נהיגה'},
+    {v:'first',i:'🌱',t:'רכב ראשון',s:'קל, זול לביטוח, אמין'},
+  ];
+  return`<div class="mhandle"></div>
+  <div class="mtitle">לאיזה שימוש? 🛣️</div>
+  <div class="msub">בחר את מה שמתאר אותך הכי טוב</div>
+  <div id="uc-opts">${opts.map(o=>`<div class="mopt" onclick="selUC(this,'${o.v}')"><div class="mopt-ico">${o.i}</div><div class="mopt-txt"><div class="mt">${o.t}</div><div class="ms">${o.s}</div></div><div class="mopt-chk">✓</div></div>`).join('')}</div>
+  <button class="mbtn" onclick="confirmUC()">המשך →</button>`;
+}
+function selUC(el,v){
+  document.querySelectorAll('#uc-opts .mopt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel'); userData.usecase=v; persist();
+}
+function confirmUC(){
+  if(!userData.usecase){toast('אנא בחר אפשרות');return;}
+  closeModal();
+  const lbl={city:'נסיעות עיר',family:'משפחה וטיולים',highway:'בין-עירוני',performance:'ביצועים',first:'רכב ראשון'};
+  addUser(`שימוש: ${lbl[userData.usecase]}`);
+  setTimeout(()=>addAI(`מעולה! עכשיו — <strong>מה הכי חשוב לך</strong>?`,0,[{t:'בחר עדיפויות 🎯',a:()=>nextStep()}]),600);
+}
+
+function buildPriorityModal(){
+  const opts=[
+    {v:'price',i:'💰',t:'מחיר נמוך',s:'לחסוך כמה שיותר'},
+    {v:'reliability',i:'🛡️',t:'אמינות',s:'לא אשבר בדרך'},
+    {v:'safety',i:'⭐',t:'בטיחות',s:'ציוני Euro NCAP גבוהים'},
+    {v:'fuel',i:'⛽',t:'חיסכון דלק',s:'הוצאות חודשיות נמוכות'},
+    {v:'space',i:'📦',t:'מרחב',s:'מקום לכל המשפחה'},
+    {v:'tech',i:'📱',t:'טכנולוגיה',s:'מסך, CarPlay, עזרי נהיגה'},
+    {v:'resale',i:'📈',t:'ערך מכירה',s:'שמירת ערך לאורך זמן'},
+  ];
+  sels.priority=[];
+  return`<div class="mhandle"></div>
+  <div class="mtitle">מה הכי חשוב? 🎯</div>
+  <div class="msub">בחר עד 3 (לפי סדר עדיפות)</div>
+  <div id="pr-opts">${opts.map(o=>`<div class="mopt" onclick="togPR(this,'${o.v}')"><div class="mopt-ico">${o.i}</div><div class="mopt-txt"><div class="mt">${o.t}</div><div class="ms">${o.s}</div></div><div class="mopt-chk">✓</div></div>`).join('')}</div>
+  <button class="mbtn" onclick="confirmPR()">המשך →</button>`;
+}
+function togPR(el,v){
+  if(el.classList.contains('sel')){el.classList.remove('sel');sels.priority=sels.priority.filter(x=>x!==v);}
+  else{if(sels.priority.length>=3){toast('עד 3 עדיפויות');return;}el.classList.add('sel');sels.priority.push(v);}
+}
+function confirmPR(){
+  if(!sels.priority.length){toast('בחר לפחות אחת');return;}
+  closeModal(); userData.priorities=sels.priority; persist();
+  const lbl={price:'מחיר',reliability:'אמינות',safety:'בטיחות',fuel:'חיסכון דלק',space:'מרחב',tech:'טכנולוגיה',resale:'ערך מכירה'};
+  addUser(`עדיפויות: ${sels.priority.map(p=>lbl[p]).join(', ')}`);
+  setTimeout(()=>addAI(`<strong>שאלה אחרונה</strong> — סוג הרכב שמתאים לך?`,0,[{t:'בחר סוג ⛽',a:()=>nextStep()}]),600);
+}
+
+function buildFuelModal(){
+  const opts=[
+    {v:'petrol',i:'⛽',t:'בנזין',s:'קלאסי, תדלוק מהיר'},
+    {v:'hybrid',i:'🔋',t:'היברידי',s:'חיסכון, פחות תחנות דלק'},
+    {v:'electric',i:'⚡',t:'חשמלי',s:'אפס דלק, עתיד'},
+    {v:'diesel',i:'🚛',t:'דיזל',s:'חיסכון בכביש מהיר'},
+    {v:'any',i:'🤷',t:'לא משנה לי',s:'AI יבחר את האופטימלי'},
+  ];
+  sels.fuel=[];
+  return`<div class="mhandle"></div>
+  <div class="mtitle">סוג רכב מועדף ⛽</div>
+  <div class="msub">אפשר לבחור יותר מאחד</div>
+  <div id="fl-opts">${opts.map(o=>`<div class="mopt" onclick="togFL(this,'${o.v}')"><div class="mopt-ico">${o.i}</div><div class="mopt-txt"><div class="mt">${o.t}</div><div class="ms">${o.s}</div></div><div class="mopt-chk">✓</div></div>`).join('')}</div>
+  <button class="mbtn" onclick="confirmFL()">קבל המלצה →</button>`;
+}
+function togFL(el,v){
+  if(el.classList.contains('sel')){el.classList.remove('sel');sels.fuel=sels.fuel.filter(x=>x!==v);}
+  else{el.classList.add('sel');sels.fuel.push(v);}
+}
+function confirmFL(){
+  closeModal(); userData.fuel=sels.fuel.length?sels.fuel:['any']; persist();
+  const lbl={petrol:'בנזין',hybrid:'היברידי',electric:'חשמלי',diesel:'דיזל',any:'לא משנה'};
+  addUser(`סוג רכב: ${userData.fuel.map(f=>lbl[f]).join(', ')}`);
+  setTimeout(()=>{showLoading();setTimeout(generateRec,2200)},600);
+}
+
+// ══════════════════════════════════════════════════
+// LOADING
+// ══════════════════════════════════════════════════
+let loadingId=null;
+function showLoading(){
+  const msgs=['🔍 סורק את השוק הישראלי...','📊 מנתח 14 פרמטרים...','💡 מחשב עלות אמיתית לשלוש שנים...','✅ מכין המלצה מדויקת...'];
+  let i=0;
+  const chat=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.id='loading-msg';
+  div.className='bubble-row';
+  div.innerHTML=`<div class="bav ai">AI</div><div><div class="bubble ai">${msgs[0]}</div></div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  loadingId=setInterval(()=>{
+    i++;if(i>=msgs.length){clearInterval(loadingId);return;}
+    const b=div.querySelector('.bubble');
+    if(b)b.textContent=msgs[i];
+  },550);
+}
+
+// ══════════════════════════════════════════════════
+// GENERATE RECOMMENDATION
+// ══════════════════════════════════════════════════
+function generateRec(){
+  if(loadingId)clearInterval(loadingId);
+  const ld=document.getElementById('loading-msg');if(ld)ld.remove();
+  document.getElementById('prog-wrap').style.display='none';
+
+  const budget=userData.budget||80000;
+  const usecase=userData.usecase||'city';
+  const budgetKey=budget<60000?'low':budget<100000?'mid':'high';
+
+  let pool;
+  if(Array.isArray(CARS[usecase])) pool=CARS[usecase];
+  else pool=CARS[usecase]?.[budgetKey]||CARS.city.mid;
+
+  const car=pool[0], alt=pool[1]||CARS.city.mid[0];
+  userData.rec=car; userData.alt=alt;
+
+  const score3yr=car.price+(car.maint+car.fuel+car.ins)*3;
+  const scoreClass=car.score>=9.3?'great':car.score>=8.5?'good':'ok';
+  const scoreTxt=car.score>=9.3?'מושלם':'טוב מאוד';
+
+  const recHTML=`<div class="rec-card">
+    <div class="rc-badge">🏆 ההמלצה שלי</div>
+    <div class="rc-name">${car.n}</div>
+    <div class="rc-sub">${car.y} • ${car.p}</div>
+    <div class="rc-score">
+      <div class="rc-score-num">${car.score}</div>
+      <div class="rc-score-lbl">${scoreTxt} — ${car.score}/10</div>
+    </div>
+    <div class="rc-grid">
+      <div class="rc-stat"><div class="rc-sval">₪${fmt(car.maint)}</div><div class="rc-slbl">תחזוקה/שנה</div></div>
+      <div class="rc-stat"><div class="rc-sval">₪${fmt(car.ins)}</div><div class="rc-slbl">ביטוח/שנה</div></div>
+      <div class="rc-stat"><div class="rc-sval">₪${fmt(car.fuel)}</div><div class="rc-slbl">דלק/שנה</div></div>
+      <div class="rc-stat"><div class="rc-sval">₪${fmt(score3yr)}</div><div class="rc-slbl">עלות 3 שנים</div></div>
+    </div>
+    <div class="rc-why">
+      <div class="rc-why-h">💡 למה ממליץ עליה?</div>
+      <div class="rc-why-t">${car.why}</div>
+    </div>
+    <div class="pros-cons">
+      <div class="pc-col"><h4 class="pro-h">✅ יתרונות</h4>${car.pros.map(p=>`<div class="pc-item">${p}</div>`).join('')}</div>
+      <div class="pc-col"><h4 class="con-h">⚠️ חסרונות</h4>${car.cons.map(c=>`<div class="pc-item">${c}</div>`).join('')}</div>
+    </div>
+    <div class="rc-cta-row">
+      <button class="rc-cta primary" onclick="showLeads()">🔍 מצא מודעות</button>
+      <button class="rc-cta secondary" onclick="qr('ספר לי עוד על ${car.n.split(' ')[0]}')">עוד פרטים</button>
+    </div>
+  </div>`;
+
+  addAI('✅ <strong>הניתוח הושלם!</strong><br>בהתאם לצרכים שלך — הנה ההמלצה:');
+  setTimeout(()=>{
+    const chat=document.getElementById('chat');
+    const div=document.createElement('div');
+    div.className='bubble-row';
+    div.innerHTML=`<div class="bav ai">AI</div><div>${recHTML}</div>`;
+    chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  },300);
+
+  setTimeout(()=>addAI(`<strong>חלופה מצוינת:</strong> ${alt.n} (${alt.y})<br>${alt.p}<br>${alt.why}`,0,[
+    {t:`ספר עוד על ${alt.n.split(' ')[0]}`,a:()=>qr(`ספר לי עוד על ${alt.n}`)},
+    {t:'השווה בין השניים',a:()=>qr('השוו בין שני הרכבים שהמלצת')},
+    {t:'גלאי הונאות 🛡️',a:()=>openTool('scam')},
+  ]),2500);
+
+  setTimeout(()=>{
+    userData.chatReady=true;
+    updateHints();
+  },5000);
+}
+
+// ══════════════════════════════════════════════════
+// LEAD LISTINGS (Monetization)
+// ══════════════════════════════════════════════════
+function showLeads(){
+  const car=userData.rec;
+  if(!car){return;}
+  const listings=[
+    {city:'תל אביב',year:car.y.split('-')[1]||'2021',km:'42,000',price:fmt(car.price-3000),source:'Yad2'},
+    {city:'חיפה',year:car.y.split('-')[0]||'2019',km:'67,000',price:fmt(car.price-8000),source:'Yad2'},
+    {city:'ירושלים',year:car.y.split('-')[1]||'2021',km:'38,000',price:fmt(car.price+2000),source:'AutoMax'},
+  ];
+  const html=`<div class="lead-section">
+    <div class="lead-title">🔍 נמצאו ${listings.length} מודעות מתאימות</div>
+    <div class="lead-sub">רכבים אמיתיים בשוק עכשיו — מסונן לפי הצרכים שלך</div>
+    <div class="lead-listings">${listings.map(l=>`<div class="lead-listing" onclick="openListing('${l.source}','${car.n}')">
+      <div class="lead-listing-left"><div class="ll-name">${car.n} ${l.year}</div><div class="ll-meta">${l.km} ק"מ • ${l.city}</div></div>
+      <div class="lead-listing-price"><span class="ll-price">₪${l.price}</span><span class="ll-city">${l.source}</span></div>
+      <span class="ll-arrow">→</span></div>`).join('')}</div>
+    <div class="lead-cta-row">
+      <button class="lead-cta primary" onclick="goToYad2('${car.n}')">ראה עוד ב-Yad2 →</button>
+      <button class="lead-cta secondary" onclick="shareResult()">📤 שתף תוצאה</button>
+    </div>
+    <div class="lead-source">* מחירים לצורך הדגמה בלבד</div>
+  </div>`;
+
+  const chat=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.className='bubble-row';
+  div.innerHTML=`<div class="bav ai">AI</div><div>${html}</div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+}
+
+function openListing(source, car){
+  const q=encodeURIComponent(car.split(' ').slice(0,2).join(' '));
+  window.open(`https://www.yad2.co.il/vehicles/cars?manufacturer=${q}`,'_blank');
+  toast(`פותח ${source}...`);
+}
+function goToYad2(car){
+  const q=encodeURIComponent(car.split(' ').slice(0,2).join(' '));
+  window.open(`https://www.yad2.co.il/vehicles/cars`,'_blank');
+  toast('פותח יד 2...');
+}
+function shareResult(){
+  const car=userData.rec;
+  const text=`🚗 AutoAI ממליץ לי על ${car?.n||'רכב'} — ${car?.p||''}\nציון: ${car?.score||''}/10\n\nנסה גם אתה: autoai.co.il`;
+  if(navigator.share) navigator.share({text});
+  else{navigator.clipboard.writeText(text);toast('📋 הועתק!');}
+}
+
+// ══════════════════════════════════════════════════
+// TOOLS
+// ══════════════════════════════════════════════════
+function openTool(name){
+  if(name==='cost') showCostTool();
+  else if(name==='scam') showScamTool();
+  else if(name==='nego') showNegoTool();
+  else if(name==='checklist') showChecklist();
+  else if(name==='loan') showLoanTool();
+  else if(name==='compare') showCompareTool();
+}
+
+// COST TOOL
+function showCostTool(){
+  const car=userData.rec;
+  if(!car){toast('קודם קבל המלצה מהיועץ');switchTab('chat');return;}
+  const y1=car.maint+car.fuel+car.ins+1200;
+  const y3=car.price+y1*3+Math.round(car.price*.12);
+  const html=`<div class="cost-card">
+    <div class="cost-header">
+      <div class="cost-title">💰 עלות אמיתית — ${car.n}</div>
+      <span style="font-size:11px;opacity:.6">3 שנים</span>
+    </div>
+    <div class="cost-body">
+      <div class="cost-row"><span class="cost-lbl">מחיר קנייה</span><span class="cost-val">₪${fmt(car.price)}</span></div>
+      <div class="cost-row"><span class="cost-lbl">ביטוח (שנה)</span><span class="cost-val">₪${fmt(car.ins)}</span></div>
+      <div class="cost-row"><span class="cost-lbl">דלק (שנה)</span><span class="cost-val">₪${fmt(car.fuel)}</span></div>
+      <div class="cost-row"><span class="cost-lbl">תחזוקה (שנה)</span><span class="cost-val">₪${fmt(car.maint)}</span></div>
+      <div class="cost-row"><span class="cost-lbl">רישוי שנתי</span><span class="cost-val">₪1,200</span></div>
+      <div class="cost-row"><span class="cost-lbl">ירידת ערך (3 שנה)</span><span class="cost-val">₪${fmt(Math.round(car.price*.12))}</span></div>
+      <div class="cost-total"><span class="cost-total-lbl">סה"כ 3 שנים</span><span class="cost-total-val">₪${fmt(y3)}</span></div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">💡 עלות חודשית ממוצעת: <strong>₪${fmt(Math.round(y3/36))}</strong> (כולל הכל)</p>
+    </div>
+  </div>`;
+  addToChat(html);
+  toast('עלות אמיתית — נוסף לצ׳אט');
+}
+
+// SCAM DETECTOR
+function showScamTool(){
+  openModal(`<div class="mhandle"></div>
+  <div class="mtitle">🛡️ גלאי הונאות</div>
+  <div class="msub">הכנס פרטי הרכב ואנחנו נזהה דגלים אדומים</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <input id="sc-price" placeholder="מחיר מבוקש (₪)" type="number" style="border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:13px;font-family:Heebo,sans-serif;outline:none">
+    <input id="sc-year" placeholder="שנה" type="number" style="border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:13px;font-family:Heebo,sans-serif;outline:none">
+    <input id="sc-km" placeholder="ק״מ" type="number" style="border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:13px;font-family:Heebo,sans-serif;outline:none">
+    <input id="sc-owners" placeholder="מספר בעלים" type="number" style="border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;font-size:13px;font-family:Heebo,sans-serif;outline:none">
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer">
+    <input type="checkbox" id="sc-acc" style="width:18px;height:18px"> <span style="font-size:13px">היו תאונות</span>
+  </label>
+  <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer">
+    <input type="checkbox" id="sc-finance" style="width:18px;height:18px"> <span style="font-size:13px">יש עיקול/ליסינג</span>
+  </label>
+  <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer">
+    <input type="checkbox" id="sc-import" style="width:18px;height:18px"> <span style="font-size:13px">רכב מיובא</span>
+  </label>
+  <button class="mbtn" onclick="runScam()">🔍 בדוק עכשיו</button>`);
+}
+
+function runScam(){
+  const price=+document.getElementById('sc-price').value;
+  const year=+document.getElementById('sc-year').value;
+  const km=+document.getElementById('sc-km').value;
+  const owners=+document.getElementById('sc-owners').value||1;
+  const acc=document.getElementById('sc-acc').checked;
+  const finance=document.getElementById('sc-finance').checked;
+  const imported=document.getElementById('sc-import').checked;
+
+  if(!price||!year){toast('מלא לפחות מחיר ושנה');return;}
+  closeModal();
+
+  const flags=[];
+  const safe=[];
+  const warns=[];
+
+  const age=2026-year;
+  const expectedKm=age*15000;
+  if(km>expectedKm*1.3) flags.push(`ק"מ גבוה מהמצופה (צפי: ${fmt(expectedKm)})`);
+  else safe.push(`ק"מ סביר לגיל הרכב`);
+
+  if(owners>2) flags.push(`${owners} בעלים — הרבה מאוד`);
+  else if(owners===1) safe.push('בעלים ראשון — מצוין');
+  else warns.push('2 בעלים — שאל על הסיבה');
+
+  if(acc){flags.push('תאונות — חובה לבדוק את הדו"ח המלא');}
+  else safe.push('ללא תאונות מדווחות');
+
+  if(finance) flags.push('עיקול/ליסינג — אל תחתום לפני בדיקה משפטית');
+  if(imported) warns.push('רכב מיובא — בדוק שכל הנייר בסדר');
+
+  // Price check (rough)
+  const marketMin=year>2020?70000:year>2017?50000:35000;
+  if(price<marketMin*0.75) flags.push(`מחיר נמוך מאוד — חשוד (מינימום שוק ~₪${fmt(marketMin)})`);
+  else if(price<marketMin) warns.push(`מחיר מעט נמוך — בדוק שאין הפתעות`);
+  else safe.push('מחיר תואם לשוק');
+
+  const dangerLevel=flags.length>=2?'danger':flags.length===1||warns.length>=2?'warn':'safe';
+  const dTitle={safe:'✅ נראה תקין',warn:'⚠️ יש נקודות לבדוק',danger:'🚨 דגלים אדומים!'}[dangerLevel];
+  const dSub={safe:'לא זוהו בעיות גדולות — המשך עם בדיקת מכונאי',warn:'כדאי לבדוק לפני קנייה',danger:'בדוק היטב לפני כל תשלום'}[dangerLevel];
+
+  const html=`<div class="scam-card ${dangerLevel}">
+    <div class="scam-header">
+      <div class="scam-icon">${{safe:'✅',warn:'⚠️',danger:'🚨'}[dangerLevel]}</div>
+      <div><div class="scam-title">${dTitle}</div><div class="scam-sub">${dSub}</div></div>
+    </div>
+    <div class="scam-items">
+      ${flags.map(f=>`<div class="scam-item red">🔴 ${f}</div>`).join('')}
+      ${warns.map(w=>`<div class="scam-item orange">🟡 ${w}</div>`).join('')}
+      ${safe.map(s=>`<div class="scam-item green">✅ ${s}</div>`).join('')}
+    </div>
+  </div>`;
+
+  addToChat(html);
+  toast('דוח הונאות — נוסף לצ׳אט');
+}
+
+// NEGOTIATION COACH
+function showNegoTool(){
+  openModal(`<div class="mhandle"></div>
+  <div class="mtitle">🤝 מאמן משא ומתן</div>
+  <div class="msub">כמה המוכר מבקש? נגיד לך כמה להציע ואיך</div>
+  <span style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block">מחיר מבוקש (₪)</span>
+  <div class="slider-val" id="neg-disp">₪80,000</div>
+  <input type="range" min="20000" max="250000" step="5000" value="80000" oninput="document.getElementById('neg-disp').textContent='₪'+fmt(+this.value);window._negPrice=+this.value">
+  <div class="rlabels"><span>₪20k</span><span>₪250k</span></div>
+  <button class="mbtn" style="margin-top:16px" onclick="runNego()">קבל אסטרטגיה 🤝</button>`);
+  window._negPrice=80000;
+}
+
+function runNego(){
+  const ask=window._negPrice||80000;
+  closeModal();
+  const offer=Math.round(ask*0.91/1000)*1000;
+  const target=Math.round(ask*0.94/1000)*1000;
+
+  const html=`<div class="neg-card">
+    <div class="neg-header">
+      <div class="neg-title">🤝 אסטרטגיית מו״מ</div>
+      <div class="neg-sub">לרכב במחיר ₪${fmt(ask)}</div>
+    </div>
+    <div class="neg-body">
+      <div class="neg-price-row">
+        <div class="neg-price ask"><span class="neg-price-val">₪${fmt(ask)}</span><span class="neg-price-lbl">מבקש</span></div>
+        <div class="neg-arrow">→</div>
+        <div class="neg-price offer"><span class="neg-price-val">₪${fmt(target)}</span><span class="neg-price-lbl">מטרה שלך</span></div>
+      </div>
+      <div class="neg-tips">
+        <div class="neg-tip"><div class="neg-tip-num">1</div>פתח עם הצעה של ₪${fmt(offer)} (9% הנחה). זה לגיטימי לחלוטין בשוק הישראלי.</div>
+        <div class="neg-tip"><div class="neg-tip-num">2</div>הצג ממצאים: "ראיתי קורולה דומה ב-Yad2 ב-₪${fmt(ask-8000)}" — גם אם זה לא 100% זהה.</div>
+        <div class="neg-tip"><div class="neg-tip-num">3</div>אל תגיד "זה הכי שאני יכול" — תמיד תשאיר מרווח. הגע עם מזומן/העברה מוכנה.</div>
+        <div class="neg-tip"><div class="neg-tip-num">4</div>ציין דברים שצריך תיקון: "הגומיות צריכות החלפה... יש קצת חלודה תחת..." — כל פגם שווה ₪500+.</div>
+        <div class="neg-tip"><div class="neg-tip-num">5</div>אם עומד — שאל: "מה הכי נמוך שתוכל?" ושתוק. מי שמדבר ראשון — מפסיד.</div>
+      </div>
+    </div>
+  </div>`;
+  addToChat(html);
+  toast('אסטרטגיית מו״מ — נוסף לצ׳אט');
+}
+
+// CHECKLIST
+function showChecklist(){
+  const total=CHECKLIST.reduce((a,s)=>a+s.items.length,0);
+  const done=Object.values(checkState).filter(Boolean).length;
+  const pct=Math.round(done/total*100);
+
+  const sectionsHTML=CHECKLIST.map((sec,si)=>`
+    <div class="check-section">
+      <div class="check-section-title">${sec.sec}</div>
+      ${sec.items.map((item,ii)=>{
+        const key=`${si}-${ii}`;
+        return`<div class="check-item" onclick="toggleCheck('${key}',this)">
+          <div class="check-box${checkState[key]?' done':''}">
+            ${checkState[key]?'✓':''}
+          </div>
+          <span class="check-txt${checkState[key]?' done':''}">${item}</span>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  const html=`<div class="check-card">
+    <div class="check-header">
+      <div style="font-size:13px;font-weight:800">✅ צ׳קליסט בדיקת רכב</div>
+      <span style="font-size:12px">${done}/${total} (${pct}%)</span>
+    </div>
+    <div class="check-progress"><div class="check-progress-bar" id="cpb" style="width:${pct}%"></div></div>
+    ${sectionsHTML}
+  </div>`;
+
+  addToChat(html);
+  toast('צ׳קליסט — נוסף לצ׳אט');
+}
+
+function toggleCheck(key,row){
+  checkState[key]=!checkState[key];
+  const box=row.querySelector('.check-box');
+  const txt=row.querySelector('.check-txt');
+  box.className='check-box'+(checkState[key]?' done':'');
+  box.textContent=checkState[key]?'✓':'';
+  txt.className='check-txt'+(checkState[key]?' done':'');
+  // Update progress (need to re-render - simplified)
+  const total=Object.keys(checkState).length;
+  const done=Object.values(checkState).filter(Boolean).length;
+  const pct=Math.round(done/total*100);
+  document.querySelectorAll('#cpb').forEach(el=>el.style.width=pct+'%');
+}
+
+// LOAN TOOL
+function showLoanTool(){
+  openModal(`<div class="mhandle"></div>
+  <div class="mtitle">🏦 מחשבון הלוואה</div>
+  <div class="msub">כמה תשלם בחודש?</div>
+  <span class="cost-lbl" style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">סכום הלוואה (₪)</span>
+  <div class="slider-val" id="ln-disp">₪60,000</div>
+  <input type="range" min="10000" max="200000" step="5000" value="60000" oninput="document.getElementById('ln-disp').textContent='₪'+fmt(+this.value);window._lnP=+this.value">
+  <div class="rlabels"><span>₪10k</span><span>₪200k</span></div>
+  <span class="cost-lbl" style="font-size:12px;font-weight:700;display:block;margin:12px 0 6px">תקופה</span>
+  <div class="multi-grid" id="term-opts">
+    ${[24,36,48,60,72,84].map(t=>`<div class="mg${t===60?' sel':''}" onclick="selTerm(this,${t})">${t} חודש</div>`).join('')}
+  </div>
+  <button class="mbtn" style="margin-top:14px" onclick="runLoan()">חשב תשלום חודשי</button>`);
+  window._lnP=60000; window._lnT=60;
+}
+function selTerm(el,t){
+  document.querySelectorAll('#term-opts .mg').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel'); window._lnT=t;
+}
+function runLoan(){
+  closeModal();
+  const p=window._lnP||60000, term=window._lnT||60;
+  const r=0.045/12;
+  const pmt=Math.round(p*(r*Math.pow(1+r,term))/(Math.pow(1+r,term)-1));
+  const total=pmt*term;
+  const int=total-p;
+  const html=`<div class="cost-card">
+    <div class="cost-header"><div class="cost-title">🏦 פירוט הלוואה</div></div>
+    <div class="cost-body">
+      <div class="cost-row"><span class="cost-lbl">סכום הלוואה</span><span class="cost-val">₪${fmt(p)}</span></div>
+      <div class="cost-row"><span class="cost-lbl">תקופה</span><span class="cost-val">${term} חודש</span></div>
+      <div class="cost-row"><span class="cost-lbl">ריבית שנתית</span><span class="cost-val">4.5%</span></div>
+      <div class="cost-row"><span class="cost-lbl">סה"כ ריבית</span><span class="cost-val">₪${fmt(int)}</span></div>
+      <div class="cost-total"><span class="cost-total-lbl">תשלום חודשי</span><span class="cost-total-val">₪${fmt(pmt)}</span></div>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px">* ריבית בנק ממוצעת — בדוק הצעות מ-Bank Yahav, Bank Leumi ו-Mizrahi-Tefahot</p>
+    </div>
+  </div>`;
+  addToChat(html);toast('חישוב הלוואה — נוסף לצ׳אט');
+}
+
+// COMPARE
+function showCompareTool(){
+  const car=userData.rec; const alt=userData.alt;
+  if(!car){toast('קודם קבל המלצה מהיועץ');switchTab('chat');return;}
+  const rows=[
+    ['מחיר',`₪${fmt(car.price)}`,`₪${fmt(alt.price)}`,[car.price<alt.price,alt.price<car.price]],
+    ['ציון כללי',`${car.score}/10`,`${alt.score}/10`,[car.score>alt.score,alt.score>car.score]],
+    ['תחזוקה/שנה',`₪${fmt(car.maint)}`,`₪${fmt(alt.maint)}`,[car.maint<alt.maint,alt.maint<car.maint]],
+    ['דלק/שנה',`₪${fmt(car.fuel)}`,`₪${fmt(alt.fuel)}`,[car.fuel<alt.fuel,alt.fuel<car.fuel]],
+    ['ביטוח/שנה',`₪${fmt(car.ins)}`,`₪${fmt(alt.ins)}`,[car.ins<alt.ins,alt.ins<car.ins]],
+    ['עלות 3 שנים',`₪${fmt(car.price+(car.maint+car.fuel+car.ins)*3)}`,`₪${fmt(alt.price+(alt.maint+alt.fuel+alt.ins)*3)}`,[car.price+(car.maint+car.fuel+car.ins)*3<alt.price+(alt.maint+alt.fuel+alt.ins)*3,false]],
+  ];
+  const carWins=rows.filter(r=>r[3][0]).length;
+  const altWins=rows.filter(r=>r[3][1]).length;
+  const html=`<div class="cost-card">
+    <div class="cost-header">
+      <div class="cost-title">⚖️ השוואה</div>
+      <span style="font-size:11px;opacity:.6">10 פרמטרים</span>
+    </div>
+    <div class="cost-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;text-align:center">
+        <div style="background:var(--bl);border-radius:10px;padding:10px"><div style="font-size:13px;font-weight:800;color:var(--b);margin-bottom:2px">${car.n.split(' ')[0]}</div><div style="font-size:11px;color:var(--muted)">ניצח ב-${carWins} פרמטרים</div></div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px"><div style="font-size:13px;font-weight:800;margin-bottom:2px">${alt.n.split(' ')[0]}</div><div style="font-size:11px;color:var(--muted)">ניצח ב-${altWins} פרמטרים</div></div>
+      </div>
+      ${rows.map(r=>`<div class="cost-row">
+        <span class="cost-lbl">${r[0]}</span>
+        <div style="display:flex;gap:16px">
+          <span style="font-weight:${r[3][0]?'900':'500'};color:${r[3][0]?'var(--g)':'var(--mid)'}">${r[1]}</span>
+          <span style="color:var(--light)">|</span>
+          <span style="font-weight:${r[3][1]?'900':'500'};color:${r[3][1]?'var(--g)':'var(--mid)'}">${r[2]}</span>
+        </div>
+      </div>`).join('')}
+      <div class="cost-total"><span class="cost-total-lbl">🏆 מנצח</span><span style="font-size:16px;font-weight:900;color:var(--b)">${carWins>=altWins?car.n.split(' ')[0]:alt.n.split(' ')[0]}</span></div>
+    </div>
+  </div>`;
+  addToChat(html);toast('השוואה — נוסף לצ׳אט');
+}
+
+// ══════════════════════════════════════════════════
+// FREE AI CHAT
+// ══════════════════════════════════════════════════
+async function freeChat(msg){
+  document.getElementById('send-btn').disabled=true;
+  const local=localReply(msg.toLowerCase(),msg);
+  if(local){
+    await sleep(700);
+    removeTypingDots();
+    addAI(local.text,0,local.chips);
+    document.getElementById('send-btn').disabled=false;
+    return;
+  }
+  try{
+    const sys=`אתה AutoAI — יועץ רכבים מקצועי לשוק הישראלי. דבר עברית שוטפת כמו חבר מומחה.
+פרטי משתמש: תקציב ₪${fmt(userData.budget||0)}, שימוש: ${userData.usecase||'לא ידוע'}, המלצה: ${userData.rec?.n||'עדיין לא'}.
+ענה קצר (3-4 שורות). תן נתונים ישראליים ספציפיים. אם שואל על מחיר — תן טווח בשקלים.`;
+    chatH.push({role:'user',content:msg});
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,messages:chatH.slice(-8),userData})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json();
+    const reply=data.reply||'מצטער, נסה שוב.';
+    chatH.push({role:'assistant',content:reply}); persist();
+    removeTypingDots();
+    addAI(reply.replace(/\n/g,'<br>'),0,suggestChips(msg.toLowerCase()));
+  }catch(e){
+    removeTypingDots();
+    addAI('שאלה מעניינת! לרגע יש בעיית חיבור — נסה שוב.',0,[{t:'נסה שוב',a:()=>freeChat(msg)}]);
+  }
+  document.getElementById('send-btn').disabled=false;
+}
+
+function localReply(low,orig){
+  const rec=userData.rec; const alt=userData.alt;
+  if(low.includes('ביטוח'))return{text:`ביטוח רכב בישראל 2026:<br><br>🔵 <strong>קבוצה 1-2</strong> (Swift, i10): ₪3,200-₪4,500/שנה<br>🔵 <strong>קבוצה 3-4</strong> (קורולה, מאזדה): ₪4,000-₪6,500/שנה<br>🔵 <strong>BMW/מרצדס</strong>: ₪7,000-₪12,000/שנה<br><br>💡 נהג מתחת ל-25? הוסף 40-60%. כל שנה ללא תאונה = הנחה.`,chips:[{t:'כמה לרכב שלי?',a:()=>qr(`כמה ביטוח לרכב ${rec?.n||'שהמלצת'}?`)}]};
+  if(low.includes('בדיקה')||low.includes('לפני קנייה'))return{text:`10 דברים חובה לבדוק:<br><br>1️⃣ היסטוריה ברשות הרישוי<br>2️⃣ מספר בעלים<br>3️⃣ תאונות ותיקונים<br>4️⃣ <strong>מכונאי עצמאי — ₪300, שווה כל שקל</strong><br>5️⃣ נסיעת מבחן 30+ דקות<br>6️⃣ בדיקת שמן + נוזלים<br>7️⃣ מסמכי בעלות תקינים<br>8️⃣ בדיקת פחחות + רטיבות<br>9️⃣ השוואת מחיר לשוק<br>🔟 ביטוח לפני חתימה`,chips:[{t:'צ׳קליסט מלא ✅',a:()=>openTool('checklist')}]};
+  if(low.includes('מו"מ')||low.includes('משא ומתן')||low.includes('להציע'))return{text:`כלל הזהב: <strong>תמיד הצע 8-12% פחות</strong> ממה שמבקשים.<br><br>📌 הצע ${rec?`₪${fmt(Math.round((rec.price-5000)/1000)*1000)}`:'10% פחות'} על ${rec?.n||'הרכב'}.<br>📌 אמור שראית דומה ב-Yad2 יותר בזול.<br>📌 ציין כל פגם קטן — כל דבר שווה ₪500.`,chips:[{t:'מאמן מו"מ מלא 🤝',a:()=>openTool('nego')}]};
+  if(low.includes('השוו')||low.includes('השוואה'))return{text:`אשווה את ${rec?.n||'ההמלצה'} מול ${alt?.n||'החלופה'} ב-6 פרמטרים ⚖️`,chips:[{t:'פתח השוואה מלאה',a:()=>openTool('compare')}]};
+  if(low.includes('עלות')||low.includes('כמה עולה'))return{text:`עלות אמיתית של ${rec?.n||'הרכב'} ב-3 שנים:<br>מחיר + ביטוח + דלק + תחזוקה + רישוי = <strong>₪${rec?fmt(rec.price+(rec.maint+rec.fuel+rec.ins)*3):'~₪250,000'}</strong>`,chips:[{t:'פירוט מלא 💰',a:()=>openTool('cost')}]};
+  if(low.includes('תודה'))return{text:'בשמחה! 😊 בהצלחה עם הרכב — אם יש עוד שאלות, אני כאן.',chips:[]};
+  return null;
+}
+
+function suggestChips(low){
+  if(low.includes('קורולה'))return[{t:'מה ההבדל בין 2019 ל-2021?',a:()=>qr('מה ההבדל בין קורולה 2019 ל-2021?')}];
+  if(low.includes('היברידי'))return[{t:'כמה חוסך היברידי?',a:()=>qr('כמה חוסך היברידי לעומת בנזין?')}];
+  return[{t:'מה לבדוק לפני קנייה?',a:()=>qr('מה לבדוק לפני קנייה?')},{t:'גלאי הונאות 🛡️',a:()=>openTool('scam')}];
+}
+
+// ══════════════════════════════════════════════════
+// CHAT UI HELPERS
+// ══════════════════════════════════════════════════
+function addAI(text,delay=0,actions=[]){
+  const fn=()=>{
+    const chat=document.getElementById('chat');
+    const div=document.createElement('div');
+    div.className='bubble-row';
+    const chips=actions.length?`<div class="chips">${actions.map(a=>`<span class="chip" onclick="(${a.a.toString()})()">${a.t}</span>`).join('')}</div>`:'';
+    div.innerHTML=`<div class="bav ai">AI</div><div><div class="bubble ai" style="animation:up .25s ease">${text}${chips}</div><div class="btime">${time()}</div></div>`;
+    chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  };
+  delay?setTimeout(fn,delay):fn();
+}
+
+function addUser(text){
+  const chat=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.className='bubble-row me';
+  div.innerHTML=`<div class="bav me">אני</div><div><div class="bubble me">${text}</div><div class="btime">${time()}</div></div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+}
+
+function addTypingDots(){
+  const chat=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.className='typing-row';div.id='td';
+  div.innerHTML=`<div class="bav ai">AI</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+}
+function removeTypingDots(){const el=document.getElementById('td');if(el)el.remove();}
+
+function addToChat(html){
+  const chat=document.getElementById('chat');
+  const div=document.createElement('div');
+  div.className='bubble-row';
+  div.innerHTML=`<div class="bav ai">AI</div><div>${html}</div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  switchTab('chat');
+}
+
+function sendMsg(){
+  const inp=document.getElementById('inp');
+  const txt=inp.value.trim();
+  if(!txt||isLoading)return;
+  if(step===0){nextStep();inp.value='';return;}
+  addUser(txt);chatH.push({role:'user',content:txt});
+  inp.value='';inp.style.height='auto';
+  addTypingDots();
+  freeChat(txt);
+}
+
+function qr(text){
+  if(step===0){nextStep();return;}
+  addUser(text);chatH.push({role:'user',content:text});
+  addTypingDots();
+  freeChat(text);
+}
+
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
+
+function updateHints(){
+  document.getElementById('hint-bar').innerHTML=`
+    <span class="hint-chip" onclick="openTool('scam')">🛡️ בדוק רכב</span>
+    <span class="hint-chip" onclick="openTool('nego')">🤝 מו״מ</span>
+    <span class="hint-chip" onclick="openTool('cost')">💰 עלות אמיתית</span>
+    <span class="hint-chip" onclick="openTool('compare')">⚖️ השווה</span>
+    <span class="hint-chip" onclick="showLeads()">🔍 מצא מודעות</span>
+    <span class="hint-chip" onclick="shareResult()">📤 שתף</span>`;
+}
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+function switchTab(t){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('view-'+t).classList.add('on');
+  document.getElementById('tab-'+t).classList.add('on');
+}
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function fmt(n){return(n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function time(){return new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400);
+}
+function toggleLang(){
+  lang=lang==='he'?'en':'he';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='he'?'rtl':'ltr';
+  document.getElementById('lang-btn').textContent=lang==='he'?'EN':'עב';
+  toast(lang==='he'?'עברית 🇮🇱':'English 🇬🇧');
+}
+function resetAll(){
+  if(!confirm('להתחיל מחדש?'))return;
+  step=0;userData={};sels={};chatH=[];localStorage.removeItem('autoai_state');
+  document.getElementById('chat').innerHTML='';
+  document.getElementById('prog-wrap').style.display='block';
+  updateProg();startChat();
+}
+function shareApp(){
+  const text='🚗 AutoAI — היועץ החכם לרכב שלך\n\nמוצא לך את הרכב המושלם תוך 2 דקות!\nautoai.co.il';
+  if(navigator.share)navigator.share({text});
+  else{navigator.clipboard.writeText(text);toast('📋 הועתק!');}
+}
+</script>
+</body>
+</html>
